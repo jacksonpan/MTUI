@@ -1,6 +1,9 @@
 MTUI
 ====
 
+License:
+follow GPL license
+
 wrapper for iOS UI
 
 MTTableView wrapper is not all complete, you can add block function like code (you can see).
