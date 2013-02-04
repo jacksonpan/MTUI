@@ -11,17 +11,25 @@
 @interface MTConfig : NSObject
 + (MTConfig*)current;
 
-- (BOOL)checkExist:(NSString *)defaultName;
+- (BOOL)existObjectForKey:(NSString*)defaultName;
 
-- (NSString*)stringForKey:(NSString *)defaultName;
-- (NSInteger)intForKey:(NSString *)defaultName;
+- (id)objectForKey:(NSString *)defaultName;
+- (void)setObject:(id)value forKey:(NSString *)defaultName;
+- (void)removeObjectForKey:(NSString *)defaultName;
+
+- (NSString *)stringForKey:(NSString *)defaultName;
+- (NSInteger)integerForKey:(NSString *)defaultName;
+- (int)intForKey:(NSString *)defaultName;
+- (float)floatForKey:(NSString *)defaultName;
 - (BOOL)boolForKey:(NSString *)defaultName;
 
-- (BOOL)setObject:(id)value forKey:(NSString *)defaultName;
-- (BOOL)setInt:(NSInteger)value forKey:(NSString *)defaultName;
-- (BOOL)setBOOL:(BOOL)value forKey:(NSString *)defaultName;
+- (void)setString:(NSString*)value forKey:(NSString *)defaultName;
+- (void)setInteger:(NSInteger)value forKey:(NSString *)defaultName;
+- (void)setInt:(int)value forKey:(NSString *)defaultName;
+- (void)setFloat:(float)value forKey:(NSString *)defaultName;
+- (void)setBool:(BOOL)value forKey:(NSString *)defaultName;
 
-- (BOOL)removeObjectForKey:(NSString *)defaultName;
+- (void)clear;
 
-- (void)cpDBToDesktop;
+- (void)cpDBToDesktop;//for test
 @end
