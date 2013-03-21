@@ -1,41 +1,47 @@
 //
 //  MTTableView.m
-//  WeiChuanV3
+//  MicroTransfer
 //
 //  Created by jacksonpan on 13-1-19.
 //  Copyright (c) 2013年 weichuan. All rights reserved.
 //
 
 #import "MTTableView.h"
+#import "MTTableView+Transform.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface MTTableView () <UITableViewDataSource, UITableViewDelegate>
-
+{
+    CGPoint _lastScrollPosition;
+    CGPoint _currentScrollPosition;
+    NSIndexPath* lastIndexPath;
+}
 @end
 
 @implementation MTTableView
 @synthesize blockNumberOfRows = _blockNumberOfRows;
 @synthesize blockCellForRowAtIndexPath = _blockCellForRowAtIndexPath;
-@synthesize blockNumberOfSections;
-@synthesize blockTitleForHeaderInSection;
+@synthesize blockNumberOfSections = _blockNumberOfSections;
+@synthesize blockTitleForHeaderInSection = _blockTitleForHeaderInSection;
 @synthesize blockTitleForFooterInSection;
 @synthesize blockCanEditRowAtIndexPath;
 @synthesize blockCanMoveRowAtIndexPath;
 @synthesize blockSectionIndexTitles;
-@synthesize blockSectionForSectionIndexTitle;
+@synthesize blockSectionForSectionIndexTitle = _blockSectionForSectionIndexTitle;
 @synthesize blockCommitEditingStyle;
 @synthesize blockMoveRowAtIndexPath;
 @synthesize blockwWllDisplayCell;
 @synthesize blockHeightForRowAtIndexPath = _blockHeightForRowAtIndexPath;
-@synthesize blockHeightForHeaderInSection;
+@synthesize blockHeightForHeaderInSection = _blockHeightForHeaderInSection;
 @synthesize blockHeightForFooterInSection;
-@synthesize blockViewForHeaderInSection;
+@synthesize blockViewForHeaderInSection = _blockViewForHeaderInSection;
 @synthesize blockViewForFooterInSection;
 @synthesize blockAccessoryButtonTappedForRowWithIndexPath;
 @synthesize blockWillSelectRowAtIndexPath;
 @synthesize blockWillDeselectRowAtIndexPath;
 @synthesize blockDidSelectRowAtIndexPath = _blockDidSelectRowAtIndexPath;
-@synthesize blockDidDeselectRowAtIndexPath;
-@synthesize blockEditingStyleForRowAtIndexPath;
+@synthesize blockDidDeselectRowAtIndexPath = _blockDidDeselectRowAtIndexPath;
+@synthesize blockEditingStyleForRowAtIndexPath = _blockEditingStyleForRowAtIndexPath;
 @synthesize blockTitleForDeleteConfirmationButtonForRowAtIndexPath;
 @synthesize blockShouldIndentWhileEditingRowAtIndexPath;
 @synthesize blockWillBeginEditingRowAtIndexPath;
@@ -45,6 +51,14 @@
 @synthesize blockShouldShowMenuForRowAtIndexPath;
 @synthesize blockCanPerformAction;
 @synthesize blockPerformAction;
+@synthesize blockMTTableViewReloadStart;
+@synthesize blockMTTableViewReloadEnd;
+@synthesize blockMTTableViewReloadAndDisplayEnd;
+
+/* block above */
+
+@synthesize enableTransform = _enableTransform;
+@synthesize blockTransform = _blockTransform;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -52,6 +66,7 @@
     if (self) {
         // Initialization code
         [self initBlock];
+        [self initFunction];
     }
     return self;
 }
@@ -62,6 +77,7 @@
     if(self)
     {
         [self initBlock];
+        [self initFunction];
     }
     return self;
 }
@@ -72,24 +88,14 @@
     self.dataSource = self;
 }
 
-- (void)setBlockNumberOfRows:(numberOfRows)blockNumberOfRows
-{
-    _blockNumberOfRows = blockNumberOfRows;
-}
 
-- (void)setBlockCellForRowAtIndexPath:(cellForRowAtIndexPath)blockCellForRowAtIndexPath
+- (void)initFunction
 {
-    _blockCellForRowAtIndexPath = blockCellForRowAtIndexPath;
-}
-
-- (void)setBlockHeightForRowAtIndexPath:(heightForRowAtIndexPath)blockHeightForRowAtIndexPath
-{
-    _blockHeightForRowAtIndexPath = blockHeightForRowAtIndexPath;
-}
-
-- (void)setBlockDidSelectRowAtIndexPath:(didSelectRowAtIndexPath)blockDidSelectRowAtIndexPath
-{
-    _blockDidSelectRowAtIndexPath = blockDidSelectRowAtIndexPath;
+    _enableTransform = NO;
+    if(_blockTransform == nil)
+    {
+        _blockTransform = MTTableViewCellTransformCurl;
+    }
 }
 
 #pragma mark - DataSource @required
@@ -99,17 +105,18 @@
     NSInteger ret = 0;
     if(_blockNumberOfRows)
     {
-        ret = _blockNumberOfRows(tableView, section);
+        ret = _blockNumberOfRows(self, section);
     }
     return ret;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    lastIndexPath = indexPath;
     UITableViewCell* ret = nil;
     if(_blockCellForRowAtIndexPath)
     {
-        ret = _blockCellForRowAtIndexPath(tableView, indexPath);
+        ret = _blockCellForRowAtIndexPath(self, indexPath);
     }
     return ret;
 }
@@ -119,9 +126,9 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     NSInteger ret = 1;
-    if(blockNumberOfSections)
+    if(_blockNumberOfSections)
     {
-        ret = blockNumberOfSections(tableView);
+        ret = _blockNumberOfSections(self);
     }
     return ret;
 }
@@ -129,20 +136,19 @@
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
     NSString* ret = nil;
-    if(blockTitleForHeaderInSection)
+    if(_blockTitleForHeaderInSection)
     {
-        ret = blockTitleForHeaderInSection(tableView, section);
+        ret = _blockTitleForHeaderInSection(self, section);
     }
     return ret;
 }
-
 
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section
 {
     NSString* ret = nil;
     if(blockTitleForFooterInSection)
     {
-        ret = blockTitleForFooterInSection(tableView, section);
+        ret = blockTitleForFooterInSection(self, section);
     }
     return ret;
 }
@@ -152,7 +158,7 @@
     BOOL ret = YES;
     if(blockCanEditRowAtIndexPath)
     {
-        ret = blockCanEditRowAtIndexPath(tableView, indexPath);
+        ret = blockCanEditRowAtIndexPath(self, indexPath);
     }
     return ret;
 }
@@ -162,7 +168,7 @@
     BOOL ret = NO;
     if(blockCanMoveRowAtIndexPath)
     {
-        ret = blockCanMoveRowAtIndexPath(tableView, indexPath);
+        ret = blockCanMoveRowAtIndexPath(self, indexPath);
     }
     return ret;
 }
@@ -172,7 +178,7 @@
     NSArray* ret = nil;
     if(blockSectionIndexTitles)
     {
-        ret = blockSectionIndexTitles(tableView);
+        ret = blockSectionIndexTitles(self);
     }
     return ret;
 }
@@ -180,9 +186,9 @@
 - (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index
 {
     NSInteger ret = 0;
-    if (blockSectionForSectionIndexTitle)
+    if (_blockSectionForSectionIndexTitle)
     {
-        ret = blockSectionForSectionIndexTitle(tableView, title, index);
+        ret = _blockSectionForSectionIndexTitle(self, title, index);
     }
     return ret;
 }
@@ -191,7 +197,7 @@
 {
     if(blockCommitEditingStyle)
     {
-        blockCommitEditingStyle(tableView, editingStyle, indexPath);
+        blockCommitEditingStyle(self, editingStyle, indexPath);
     }
 }
 
@@ -199,7 +205,7 @@
 {
     if(blockMoveRowAtIndexPath)
     {
-        blockMoveRowAtIndexPath(tableView, sourceIndexPath, destinationIndexPath);
+        blockMoveRowAtIndexPath(self, sourceIndexPath, destinationIndexPath);
     }
 }
 
@@ -209,7 +215,39 @@
 {
     if(blockwWllDisplayCell)
     {
-        blockwWllDisplayCell(tableView, cell, indexPath);
+        blockwWllDisplayCell(self, cell, indexPath);
+    }
+    
+    if(_enableTransform)
+    {
+        float speed = self.scrollSpeed.y;
+        float normalizedSpeed = MAX(-1.0f, MIN(1.0f, speed/20.0f));
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSTimeInterval animationDuration = _blockTransform(cell.layer, normalizedSpeed);
+            [UIView animateWithDuration:animationDuration animations:^{
+                cell.layer.transform = CATransform3DIdentity;
+                cell.layer.opacity = 1.0f;
+            } completion:^(BOOL finished) {
+                
+            }];
+        });
+    }
+    
+    if(1)
+    {
+        if(lastIndexPath == indexPath)
+        {
+            [self performSelector:@selector(postMessageForReloadAndDisplayEnd) withObject:nil afterDelay:0.3];
+        }
+    }
+}
+
+- (void)postMessageForReloadAndDisplayEnd
+{
+    if(blockMTTableViewReloadAndDisplayEnd)
+    {
+        blockMTTableViewReloadAndDisplayEnd(self);
     }
 }
 
@@ -218,7 +256,7 @@
     CGFloat height = 44.0f;
     if(_blockHeightForRowAtIndexPath)
     {
-        height = _blockHeightForRowAtIndexPath(tableView, indexPath);
+        height = _blockHeightForRowAtIndexPath(self, indexPath);
     }
     return height;
 }
@@ -226,9 +264,9 @@
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
     CGFloat height = 0.0f;
-    if(blockHeightForHeaderInSection)
+    if(_blockHeightForHeaderInSection)
     {
-        height = blockHeightForHeaderInSection(tableView, section);
+        height = _blockHeightForHeaderInSection(self, section);
     }
     return height;
 }
@@ -238,7 +276,7 @@
     CGFloat height = 0.0f;
     if(blockHeightForFooterInSection)
     {
-        height = blockHeightForFooterInSection(tableView, section);
+        height = blockHeightForFooterInSection(self, section);
     }
     return height;
 }
@@ -246,9 +284,9 @@
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
     UIView* view = nil;
-    if(blockViewForHeaderInSection)
+    if(_blockViewForHeaderInSection)
     {
-        view = blockViewForHeaderInSection(tableView, section);
+        view = _blockViewForHeaderInSection(self, section);
     }
     return view;
 }
@@ -258,7 +296,7 @@
     UIView* view = nil;
     if(blockViewForFooterInSection)
     {
-        view = blockViewForFooterInSection(tableView, section);
+        view = blockViewForFooterInSection(self, section);
     }
     return view;
 }
@@ -267,7 +305,7 @@
 {
     if(blockAccessoryButtonTappedForRowWithIndexPath)
     {
-        blockAccessoryButtonTappedForRowWithIndexPath(tableView, indexPath);
+        blockAccessoryButtonTappedForRowWithIndexPath(self, indexPath);
     }
 }
 
@@ -276,7 +314,7 @@
     NSIndexPath* ret = indexPath;
     if(blockWillSelectRowAtIndexPath)
     {
-        ret = blockWillSelectRowAtIndexPath(tableView, indexPath);
+        ret = blockWillSelectRowAtIndexPath(self, indexPath);
     }
     return ret;
 }
@@ -286,7 +324,7 @@
     NSIndexPath* ret = indexPath;
     if(blockWillDeselectRowAtIndexPath)
     {
-        ret = blockWillDeselectRowAtIndexPath(tableView, indexPath);
+        ret = blockWillDeselectRowAtIndexPath(self, indexPath);
     }
     return ret;
 }
@@ -296,24 +334,24 @@
 {
     if(_blockDidSelectRowAtIndexPath)
     {
-        _blockDidSelectRowAtIndexPath(tableView, indexPath);
+        _blockDidSelectRowAtIndexPath(self, indexPath);
     }
 }
 
 - (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(3_0)
 {
-    if(blockDidDeselectRowAtIndexPath)
+    if(_blockDidDeselectRowAtIndexPath)
     {
-        blockDidDeselectRowAtIndexPath(tableView, indexPath);
+        _blockDidDeselectRowAtIndexPath(self, indexPath);
     }
 }
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCellEditingStyle ret = UITableViewCellEditingStyleNone;
-    if(blockEditingStyleForRowAtIndexPath)
+    if(_blockEditingStyleForRowAtIndexPath)
     {
-        ret = blockEditingStyleForRowAtIndexPath(tableView, indexPath);
+        ret = _blockEditingStyleForRowAtIndexPath(self, indexPath);
     }
     return ret;
 }
@@ -323,7 +361,7 @@
     NSString* ret = nil;
     if(blockTitleForDeleteConfirmationButtonForRowAtIndexPath)
     {
-        ret = blockTitleForDeleteConfirmationButtonForRowAtIndexPath(tableView, indexPath);
+        ret = blockTitleForDeleteConfirmationButtonForRowAtIndexPath(self, indexPath);
     }
     return ret;
 }
@@ -333,7 +371,7 @@
     BOOL ret = YES;
     if(blockShouldIndentWhileEditingRowAtIndexPath)
     {
-        ret = blockShouldIndentWhileEditingRowAtIndexPath(tableView, indexPath);
+        ret = blockShouldIndentWhileEditingRowAtIndexPath(self, indexPath);
     }
     return ret;
 }
@@ -342,7 +380,7 @@
 {
     if(blockWillBeginEditingRowAtIndexPath)
     {
-        blockWillBeginEditingRowAtIndexPath(tableView, indexPath);
+        blockWillBeginEditingRowAtIndexPath(self, indexPath);
     }
 }
 
@@ -350,7 +388,7 @@
 {
     if(blockDidEndEditingRowAtIndexPath)
     {
-        blockDidEndEditingRowAtIndexPath(tableView, indexPath);
+        blockDidEndEditingRowAtIndexPath(self, indexPath);
     }
 }
 
@@ -359,7 +397,7 @@
     NSIndexPath* ret = sourceIndexPath;
     if(blockTargetIndexPathForMoveFromRowAtIndexPath)
     {
-        ret = blockTargetIndexPathForMoveFromRowAtIndexPath(tableView, sourceIndexPath, proposedDestinationIndexPath);
+        ret = blockTargetIndexPathForMoveFromRowAtIndexPath(self, sourceIndexPath, proposedDestinationIndexPath);
     }
     return ret;
 }
@@ -369,7 +407,7 @@
     NSInteger ret = 0;
     if(blockIndentationLevelForRowAtIndexPath)
     {
-        ret = blockIndentationLevelForRowAtIndexPath(tableView, indexPath);
+        ret = blockIndentationLevelForRowAtIndexPath(self, indexPath);
     }
     return ret;
 }
@@ -379,7 +417,7 @@
     BOOL ret = NO;
     if(blockShouldShowMenuForRowAtIndexPath)
     {
-        ret = blockShouldShowMenuForRowAtIndexPath(tableView, indexPath);
+        ret = blockShouldShowMenuForRowAtIndexPath(self, indexPath);
     }
     return ret;
 }
@@ -389,7 +427,7 @@
     BOOL ret = NO;
     if(blockCanPerformAction)
     {
-        ret = blockCanPerformAction(tableView, action, indexPath, sender);
+        ret = blockCanPerformAction(self, action, indexPath, sender);
     }
     return ret;
 }
@@ -398,9 +436,39 @@
 {
     if(blockPerformAction)
     {
-        blockPerformAction(tableView, action, indexPath, sender);
+        blockPerformAction(self, action, indexPath, sender);
     }
 }
 
+- (void)reloadData
+{
+    if(blockMTTableViewReloadStart)
+    {
+        blockMTTableViewReloadStart(self);
+    }
+    [super reloadData];
+    if(blockMTTableViewReloadEnd)
+    {
+        blockMTTableViewReloadEnd(self);
+    }
+}
 
+/* block above */
+
+- (CGPoint)scrollSpeed {
+    return CGPointMake(_lastScrollPosition.x - _currentScrollPosition.x,
+                       _lastScrollPosition.y - _currentScrollPosition.y);
+}
+
+- (void)setBlockTransform:(MTTableViewCellTransform)blockTransform
+{
+    _blockTransform = blockTransform;
+}
+
+#pragma mark - UIScrollViewDelegate
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    _lastScrollPosition = _currentScrollPosition;
+    _currentScrollPosition = [scrollView contentOffset];
+}
 @end

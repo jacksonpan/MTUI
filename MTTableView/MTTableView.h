@@ -1,48 +1,16 @@
 //
 //  MTTableView.h
-//  WeiChuanV3
+//  MicroTransfer
 //
 //  Created by jacksonpan on 13-1-19.
 //  Copyright (c) 2013年 weichuan. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
+#import "MTTableView_Define.h"
+#import "MTTableView+Transform.h"
 
-//DataSource
-typedef NSInteger(^numberOfRows)(UITableView *tableView, NSInteger section);
-typedef UITableViewCell*(^cellForRowAtIndexPath)(UITableView *tableView, NSIndexPath *indexPath);
-typedef NSInteger(^numberOfSections)(UITableView *tableView);
-typedef NSString*(^titleForHeaderInSection)(UITableView *tableView, NSInteger section);
-typedef NSString*(^titleForFooterInSection)(UITableView *tableView, NSInteger section);
-typedef BOOL(^canEditRowAtIndexPath)(UITableView *tableView, NSIndexPath *indexPath);
-typedef BOOL(^canMoveRowAtIndexPath)(UITableView *tableView, NSIndexPath *indexPath);
-typedef NSArray*(^sectionIndexTitles)(UITableView* tableView);
-typedef NSInteger(^sectionForSectionIndexTitle)(UITableView *tableView, NSString *title, NSInteger index);
-typedef void(^commitEditingStyle)(UITableView *tableView, UITableViewCellEditingStyle editingStyle, NSIndexPath *indexPath);
-typedef void(^moveRowAtIndexPath)(UITableView *tableView, NSIndexPath *sourceIndexPath, NSIndexPath *destinationIndexPath);
-//Delegate
-typedef void(^willDisplayCell)(UITableView* tableView, UITableViewCell* cell, NSIndexPath* indexPath);
-typedef CGFloat(^heightForRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef CGFloat(^heightForHeaderInSection)(UITableView* tableView, NSInteger section);
-typedef CGFloat(^heightForFooterInSection)(UITableView* tableView, NSInteger section);
-typedef UIView*(^viewForHeaderInSection)(UITableView* tableView, NSInteger section);
-typedef UIView*(^viewForFooterInSection)(UITableView* tableView, NSInteger section);
-typedef void(^accessoryButtonTappedForRowWithIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef NSIndexPath*(^willSelectRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef NSIndexPath*(^willDeselectRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef void(^didSelectRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef void(^didDeselectRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef UITableViewCellEditingStyle(^editingStyleForRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef NSString*(^titleForDeleteConfirmationButtonForRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef BOOL(^shouldIndentWhileEditingRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef void(^willBeginEditingRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef void(^didEndEditingRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef NSIndexPath*(^targetIndexPathForMoveFromRowAtIndexPath)(UITableView* tableView, NSIndexPath* sourceIndexPath, NSIndexPath* proposedDestinationIndexPath);
-typedef NSInteger(^indentationLevelForRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef BOOL(^shouldShowMenuForRowAtIndexPath)(UITableView* tableView, NSIndexPath* indexPath);
-typedef BOOL(^canPerformAction)(UITableView* tableView, SEL canPerformAction, NSIndexPath* forRowAtIndexPath, id withSender);
-typedef void(^performAction)(UITableView* tableView, SEL performAction, NSIndexPath* forRowAtIndexPath, id withSender);
-
+#define MSG_MTTableView_ReloadData_END          @"MSG_MTTableView_ReloadData_END"
 
 @interface MTTableView : UITableView
 #pragma mark - DataSource @required
@@ -82,8 +50,30 @@ typedef void(^performAction)(UITableView* tableView, SEL performAction, NSIndexP
 @property (nonatomic, strong) canPerformAction blockCanPerformAction;
 @property (nonatomic, strong) performAction blockPerformAction;
 
+@property (nonatomic, strong) MTTableViewReloadStart blockMTTableViewReloadStart;
+@property (nonatomic, strong) MTTableViewReloadEnd blockMTTableViewReloadEnd;
+@property (nonatomic, strong) MTTableViewReloadAndDisplayEnd blockMTTableViewReloadAndDisplayEnd;
+
+- (void)setBlockNumberOfSections:(numberOfSections)blockNumberOfSections;
+- (void)setBlockSectionForSectionIndexTitle:(sectionForSectionIndexTitle)blockSectionForSectionIndexTitle;
 - (void)setBlockNumberOfRows:(numberOfRows)blockNumberOfRows;
 - (void)setBlockCellForRowAtIndexPath:(cellForRowAtIndexPath)blockCellForRowAtIndexPath;
+- (void)setBlockHeightForHeaderInSection:(heightForHeaderInSection)blockHeightForHeaderInSection;
 - (void)setBlockHeightForRowAtIndexPath:(heightForRowAtIndexPath)blockHeightForRowAtIndexPath;
 - (void)setBlockDidSelectRowAtIndexPath:(didSelectRowAtIndexPath)blockDidSelectRowAtIndexPath;
+- (void)setBlockViewForHeaderInSection:(viewForHeaderInSection)blockViewForHeaderInSection;
+- (void)setBlockEditingStyleForRowAtIndexPath:(editingStyleForRowAtIndexPath)blockEditingStyleForRowAtIndexPath;
+- (void)setBlockCommitEditingStyle:(commitEditingStyle)blockCommitEditingStyle;
+- (void)setBlockCanEditRowAtIndexPath:(canEditRowAtIndexPath)blockCanEditRowAtIndexPath;
+- (void)setBlockMTTableViewReloadStart:(MTTableViewReloadStart)blockMTTableViewReloadStart;
+- (void)setBlockMTTableViewReloadEnd:(MTTableViewReloadEnd)blockMTTableViewReloadEnd;
+- (void)setBlockMTTableViewReloadAndDisplayEnd:(MTTableViewReloadAndDisplayEnd)blockMTTableViewReloadAndDisplayEnd;
+- (void)setBlockTitleForHeaderInSection:(titleForHeaderInSection)blockTitleForHeaderInSection;
+- (void)setBlockDidDeselectRowAtIndexPath:(didDeselectRowAtIndexPath)blockDidDeselectRowAtIndexPath;
+/* block above */
+
+@property (nonatomic, assign) BOOL enableTransform;
+@property (nonatomic, strong) MTTableViewCellTransform blockTransform;
+- (CGPoint)scrollSpeed;
+- (void)setBlockTransform:(MTTableViewCellTransform)blockTransform;
 @end

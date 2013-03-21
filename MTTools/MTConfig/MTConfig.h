@@ -1,6 +1,6 @@
 //
 //  MTConfig.h
-//  WeiChuanV3
+//  MicroTransfer
 //
 //  Created by jacksonpan on 13-1-21.
 //  Copyright (c) 2013年 weichuan. All rights reserved.

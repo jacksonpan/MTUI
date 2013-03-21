@@ -1,6 +1,6 @@
 //
 //  MTConfig.m
-//  WeiChuanV3
+//  MicroTransfer
 //
 //  Created by jacksonpan on 13-1-21.
 //  Copyright (c) 2013年 weichuan. All rights reserved.
@@ -72,7 +72,7 @@ static MTConfig* static_config = nil;
     //NSLog(@"复制sqlite到路径：%@成功。",realPath);
     
     dbPointer = [FMDatabase databaseWithPath:realPath];
-    dbPointer.traceExecution = YES;
+    //dbPointer.traceExecution = YES;
 }
 
 - (void)open
@@ -208,10 +208,10 @@ static MTConfig* static_config = nil;
     {
         sql = [NSString stringWithFormat:@"insert into %@ (key, objectType, %@) VALUES ('%@','%@','%@')", MTCONFIG_V2_TABLE_NAME, [self objectTypeWithTypeString:[self getTypeStringWithType:type]], defaultName, [self getTypeStringWithType:type], value];
     }
-    NSLog(@"sql:%@",sql);
+    //NSLog(@"sql:%@",sql);
     [self open];
-    BOOL ret = [dbPointer executeUpdate:sql];
-    NSLog(@"setObject:%d", ret);
+    /*BOOL ret = */[dbPointer executeUpdate:sql];
+    //NSLog(@"setObject:%d", ret);
     [self close];
 }
 
