@@ -25,4 +25,8 @@
 
 - (UIImage*)imageWithKey:(NSString*)key;
 - (void)image:(UIImage*)image forKey:(NSString*)key;
+
+- (void)clearDisk;
+- (void)clearMemory;
+- (void)clearAll;
 @end

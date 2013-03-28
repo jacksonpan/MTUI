@@ -48,6 +48,25 @@
     }
 }
 
+- (void)clearDisk
+{
+    NSString* cachePath = [[self class] cacheFolder];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    [fileManager removeItemAtPath:cachePath error:nil];
+    [[self class] cacheFolder];
+}
+
+- (void)clearMemory
+{
+    [myCache removeAllObjects];
+}
+
+- (void)clearAll
+{
+    [self clearMemory];
+    [self clearDisk];
+}
+
 - (NSString*)cacheKeyFromURLRequest:(NSURLRequest*)request
 {
     return [[request URL] absoluteString];
@@ -98,7 +117,7 @@
 
 - (void)diskImage:(UIImage*)image forKey:(NSString*)key
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^
     {
        NSData *data = nil;
        if(image)
@@ -142,8 +161,9 @@
 + (NSString *)cacheFolder
 {
     static NSString *cacheFolder;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
+    //static dispatch_once_t onceToken;
+    //dispatch_once(&onceToken, ^
+    {
         NSString *cacheDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
         cacheFolder = [cacheDir stringByAppendingPathComponent:MTCacheDownloadFolderName];
         
@@ -152,7 +172,7 @@
         if(![[NSFileManager new] createDirectoryAtPath:cacheFolder withIntermediateDirectories:YES attributes:nil error:&error]) {
             NSLog(@"Failed to create cache directory at %@", cacheFolder);
         }
-    });
+    }//);
     return cacheFolder;
 }
 

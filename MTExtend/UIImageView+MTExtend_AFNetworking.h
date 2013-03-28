@@ -16,8 +16,18 @@ typedef enum _enum_image_size
 }enum_image_size;
 
 @interface UIImageView (MTExtend_AFNetworking)
++ (void)cancelAll;
+
+- (void)setImageWithURL:(NSURL *)url imageSize:(enum_image_size)imageSize;
+
+- (void)setImageWithURL:(NSURL *)url
+       placeholderImage:(UIImage *)placeholderImage
+              imageSize:(enum_image_size)imageSize;
+
 - (void)setImageWithURL:(NSURL*)url
        placeholderImage:(UIImage *)placeholderImage
               imageSize:(enum_image_size)imageSize
                  result:(void (^)(UIImage *image, NSError *error, BOOL isCache))result;
+
+- (void)cancelImageRequestOperation;
 @end

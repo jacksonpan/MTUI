@@ -46,6 +46,11 @@ static char kAFImageRequestOperationObjectKey;
     objc_setAssociatedObject(self, &kAFImageRequestOperationObjectKey, imageRequestOperation, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
++ (void)cancelAll
+{
+    [[self af_sharedImageRequestOperationQueue] cancelAllOperations];
+}
+
 #pragma mark -
 
 - (void)setImageWithURL:(NSURL *)url imageSize:(enum_image_size)imageSize
